@@ -1,29 +1,67 @@
 const express = require("express");
+const passport = require('passport');
+const pool = require("../config");
 // const pool = require("../config");
 // const { router } = require("./user");
 // const { isLoggedIn } = require('../middlewares')
 router = express.Router();
 
 router.get('/', (req, res) => {
-    res.send('Hello Taifhoon')
-  })
+  res.send('Hello Taifhoon')
+})
 
+router.get('/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+  router.get('/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  async function (req, res) {
+    try {
+      const { email, given_name, family_name } = req.user._json;
+      const conn = await pool.getConnection();
+      await conn.beginTransaction();
+      const [rows, fields] = await conn.execute(
+        'SELECT id FROM user WHERE email = ?',
+        [email]
+      );
+      if (rows.length > 0) {
+        console.log('User already exists in database:', email);
+        await conn.rollback();
+        conn.release();
+        return res.redirect('/');
+      }
+
+      const [insertResult, insertFields] = await conn.execute(
+        'INSERT INTO user (email, firstname, lastname, role) VALUES (?, ?, ?, ?)',
+        [email, given_name, family_name, 'user']
+      );
+      console.log('User has been saved to database:', insertResult);
+
+      await conn.commit();
+      conn.release();
+      return res.redirect('/');
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+    }
+  }
+);
 
 
 // const isAdmin = async (req, res, next) => {
-    
+
 //     if ("admin" !== req.user.role) {
 //         return res.status(403).send('You do not have permission to perform this action')
 //     }
-    
+
 //       next()
 // }
 // const isCusto = async (req, res, next) => {
-    
+
 //     if ("customer" !== req.user.role) {
 //         return res.status(403).send('You do not have permission to perform this action')
 //     }
-    
+
 //       next()
 // }
 
@@ -216,7 +254,7 @@ router.get('/', (req, res) => {
 //             sql = 'SELECT * from movies WHERE m_name like ? order by '+order
 //             cond = [`%${search}%`]
 //         }else{
-            
+
 //         }
 //         const [moviedetail, fields] = await pool.query(sql, cond)
 //         await conn.commit();
