@@ -1,3 +1,32 @@
+
+
+// module.exports = {
+    
+//     isLoggedIn : (req, res, next) => {
+//         if (req.session) {
+//             console.log(req)
+//           return next();
+          
+//         }
+//         res.redirect('/login');
+//         // console.log("session : "+req.session.authenticate)
+//         console.log(req.session)
+//       },
+//     isNotLoggedIn: (req, res, next) => {
+//       if (!req.isAuthenticated()) {
+//         return next();
+//       }
+//       res.redirect('/');
+//     },
+//     redirectToHomeIfLoggedIn:(req, res, next)=> {
+//         if (req.isAuthenticated()) {
+//           return res.redirect('/home');
+//         }
+//         next();
+//       }
+//   };
+  
+  
 // const pool = require("../config");
 // async function logger(req, res, next) {
 //   const timestamp = new Date().toISOString().substring(0, 19)

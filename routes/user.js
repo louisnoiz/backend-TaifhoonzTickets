@@ -4,6 +4,15 @@ const express = require("express")
 // const bcrypt = require('bcrypt');
 // const { generateToken } = require("../utils/token");
 // const { isLoggedIn } = require('../middlewares')
+// router = express.Router();
+// const { isLoggedIn } = require('../middlewares');
+
+// router.get('/user', isLoggedIn, (req, res) => {
+//   // Your code goes here
+// });
+
+// module.exports = { router };
+
 
 router = express.Router();
 

@@ -1,79 +1,70 @@
-// const express = require("express");
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const express = require('express');
+router = express.Router();
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 const pool = require('../config');
-
-passport.use(new GoogleStrategy({
-  clientID: '548190912893-23ss693ta1hlv72u1pj17devm37m8c6e.apps.googleusercontent.com',
-  clientSecret: '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',
-  callbackURL: 'http://localhost:3000/google/callback',
-},
-  async function (accessToken, refreshToken, profile, done) {
-    try {
-      const email = profile.emails[0]?.value;
-      const firstname = profile.name.givenName;
-      const lastname = profile.name.familyName;
-      console.log('Received user data:', email, profile.name);
-
-      if (!email) {
-        throw new Error('No email found in profile');
-      }
-
-      const conn = await pool.getConnection();
-
-      await conn.beginTransaction();
-      const [result, fields] = await conn.execute(
-        'SELECT id FROM user WHERE email = ?',
-        [email]
-      );
-      if (result.length > 0) {
-        console.log('User already exists in database:', email);
-        await conn.rollback();
-        conn.release();
-        done(null, profile);
-        return;
-      }
-
-      const [insertResult, insertFields] = await conn.execute(
-        'INSERT INTO user (email, firstname, lastname) VALUES (?, ?, ?)',
-        [email, firstname, lastname]
-      );
-      console.log('User has been saved to database:', insertResult);
+const jwt = require('jsonwebtoken');
 
 
-      await conn.commit();
-      conn.release();
 
-      done(null, profile);
-    } catch (error) {
-      console.error(error);
-      done(error, null);
-    }
-  }
 
-));
-passport.serializeUser(function (user, done) {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async function (id, done) {
+router.post('/signup', async (req, res) => {
+  const { username, firstname, lastname, password } = req.body;
+  const conn = await pool.getConnection();
+  await conn.beginTransaction();
   try {
-    const conn = await pool.getConnection();
-
-    await conn.beginTransaction();
-    const [rows, fields] = await conn.execute(
-      'SELECT * FROM user WHERE id = ?',
-      [id]
-    );
-
-    if (!rows.length) { // ไม่พบข้อมูลผู้ใช้
-      done(null, null);
-    } else {
-      const user = rows[0];
-      done(null, user);
-    }
-  } catch (error) {
-    done(error, null);
+    const [rows, fields] = await pool.query('INSERT INTO user (username, firstname, lastname, password, role) VALUES (?, ?, ?, ?, ?)', [username, firstname, lastname, password, 'user']);
+    res.status(200).send('User created successfully');
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error creating user');
   }
 });
+
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const [rows, fields] = await pool.query('SELECT * FROM user WHERE username = ? AND password = ?', [username, password]);
+    if (rows.length === 0) {
+      res.status(401).send('Incorrect username or password');
+      return;
+    }
+    const user = rows[0];
+    const token = jwt.sign({ user }, 'taifhoonz');
+    res.setHeader('Authorization', `Bearer ${token}`);
+    res.status(200).send(token);
+    // res.redirect('/');
+    // console.log(req.session.user)
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error logging in');
+  }
+});
+
+router.get('/userbyid/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows, fields] = await pool.query('SELECT * FROM user WHERE id = ?', [id]);
+    const user = rows[0];
+    res.status(200).send(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error retrieving user data');
+  }
+});
+
+router.get('/userbyusername/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const [rows, fields] = await pool.query('SELECT * FROM user WHERE username = ?', [username]);
+    const user = rows[0];
+    res.status(200).send(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error retrieving user data');
+  }
+});
+
+
+exports.router = router;
 
