@@ -2,11 +2,11 @@ const express = require("express")
 const cors = require('cors')
 const app = express();
 
+require('dotenv').config();
 app.use(cors())
 app.use(express.static('static'))
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true }))
-
 
 
 const indexRouter = require('./routes/index')
