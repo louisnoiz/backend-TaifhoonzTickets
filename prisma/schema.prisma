@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Concert {
+  id       Int       @id
+  name     String?   @db.VarChar(255)
+  artist   String?   @db.VarChar(255)
+  location String?   @db.VarChar(255)
+  detail   String?   @db.VarChar(255)
+  date     DateTime? @db.DateTime(0)
+  img      String?   @db.VarChar(255)
+}
+
+model Payment {
+  id     Int     @id
+  status String? @db.VarChar(255)
+}
+
+model Round {
+  id         Int       @id
+  concert_id String?   @db.VarChar(45)
+  start_time DateTime? @db.DateTime(0)
+  end_time   DateTime? @db.DateTime(0)
+  date       DateTime? @db.DateTime(0)
+}
+
+model Ticket {
+  id         Int    @id
+  concert_id Int?
+  round_id   Int?
+  zone_id    Int?
+  user_id    Int?
+  payment_id Int?
+  price      Float?
+}
+
+model User {
+  id        Int       @id
+  email     String    @unique(map: "email_UNIQUE") @db.VarChar(255)
+  firstname String?   @db.VarChar(255)
+  lastname  String?   @db.VarChar(255)
+  role      User_role
+}
+
+model Zone {
+  id         Int       @id
+  concert_id Int?
+  zone_name  DateTime? @db.DateTime(0)
+  capacity   DateTime? @db.DateTime(0)
+}
+
+enum User_role {
+  user
+  admin
+}
