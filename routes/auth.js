@@ -30,9 +30,16 @@ router.post('/login', async (req, res) => {
       return;
     }
     const user = rows[0];
-    const token = jwt.sign({ user }, 'taifhoonz');
-    res.setHeader('Authorization', `Bearer ${token}`);
-    res.status(200).send(token);
+    const payload = { 
+      id: user.id,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      role: user.role 
+    };
+    const token = jwt.sign({ payload }, 'taifhoonz');
+    // res.setHeader('Authorization', `Bearer ${token}`);
+    res.status(200).json({ token: token });
     // res.redirect('/');
     // console.log(req.session.user)
   } catch (err) {
