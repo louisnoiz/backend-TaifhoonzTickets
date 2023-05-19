@@ -2,7 +2,6 @@ const express = require('express');
 router = express.Router();
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const pool = require('../config');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
@@ -10,6 +9,7 @@ const prisma = new PrismaClient()
 
 
 router.post('/signup', async (req, res) => {
+  const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
   try {
     const user = await prisma.user.create({
       data: {
@@ -17,12 +17,11 @@ router.post('/signup', async (req, res) => {
         email: req.body.email,
         fullName: req.body.fullName,
         phone: req.body.phone,
-        password: req.body.password,
+        password: hashedPassword,
         role: 'USER'
       }
     })
     res.status(200).send('User created successfully');
-    
   } catch (err) {
     console.log(err);
     res.status(500).send('Error creating user');
@@ -32,24 +31,47 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const [rows, fields] = await pool.query('SELECT * FROM user WHERE username = ? AND password = ?', [username, password]);
-    if (rows.length === 0) {
-      res.status(401).send('Incorrect username or password');
+    const checkUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            username: username,
+          },
+          {
+            email: username,
+          },
+        ],
+      },
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        role: true,
+        password: true,
+        phone: true,
+      }
+    })
+    if (!checkUser) {
+      res.status(401).send('Username or Email Not Found');
       return;
     }
-    const user = rows[0];
+    const match = await bcrypt.compare(password, checkUser.password);
+    console.log(match)
+    if (!match) {
+      res.status(401).send('Password is not Correct');
+      return;
+    }
+    const user = checkUser;
     const payload = { 
       id: user.id,
       username: user.username,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      role: user.role 
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      phone: user.phone,
     };
     const token = jwt.sign({ payload }, 'taifhoonz');
-    // res.setHeader('Authorization', `Bearer ${token}`);
     res.status(200).json({ token: token });
-    // res.redirect('/');
-    // console.log(req.session.user)
   } catch (err) {
     console.log(err);
     res.status(500).send('Error logging in');
@@ -59,8 +81,11 @@ router.post('/login', async (req, res) => {
 router.get('/userbyid/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows, fields] = await pool.query('SELECT * FROM user WHERE id = ?', [id]);
-    const user = rows[0];
+    const user = await prisma.user.findUnique({
+      where: {
+        id: id
+      }
+    })
     res.status(200).send(user);
   } catch (err) {
     console.log(err);
@@ -71,8 +96,11 @@ router.get('/userbyid/:id', async (req, res) => {
 router.get('/userbyusername/:username', async (req, res) => {
   const { username } = req.params;
   try {
-    const [rows, fields] = await pool.query('SELECT * FROM user WHERE username = ?', [username]);
-    const user = rows[0];
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username
+      }
+    })
     res.status(200).send(user);
   } catch (err) {
     console.log(err);
@@ -80,6 +108,4 @@ router.get('/userbyusername/:username', async (req, res) => {
   }
 });
 
-
 exports.router = router;
-
