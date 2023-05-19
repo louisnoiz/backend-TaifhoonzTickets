@@ -81,9 +81,9 @@ model Ticket {
   round     Round    @relation(fields: [roundId], references: [id])
   zoneId    String
   zone      Zone     @relation(fields: [zoneId], references: [id])
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  paymentId String?
-  payment   Payment? @relation(fields: [paymentId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  paymentId String  @unique
+  payment   Payment @relation(fields: [paymentId], references: [id])
   price     Int
 }
