@@ -4,17 +4,25 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const pool = require('../config');
 const jwt = require('jsonwebtoken');
-
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
 
 
 
 router.post('/signup', async (req, res) => {
-  const { username, firstname, lastname, password } = req.body;
-  const conn = await pool.getConnection();
-  await conn.beginTransaction();
   try {
-    const [rows, fields] = await pool.query('INSERT INTO user (username, firstname, lastname, password, role) VALUES (?, ?, ?, ?, ?)', [username, firstname, lastname, password, 'user']);
+    const user = await prisma.user.create({
+      data: {
+        username: req.body.username,
+        email: req.body.email,
+        fullName: req.body.fullName,
+        phone: req.body.phone,
+        password: req.body.password,
+        role: 'USER'
+      }
+    })
     res.status(200).send('User created successfully');
+    
   } catch (err) {
     console.log(err);
     res.status(500).send('Error creating user');
