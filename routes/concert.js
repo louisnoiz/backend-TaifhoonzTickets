@@ -1,27 +1,31 @@
 const express = require("express")
-const pool = require("../config")
-// const { isLoggedIn } = require('../middlewares')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 router = express.Router();
 
 router.post('/createConcert', async (req, res) => {
-    await prisma.concert.create({
+    await prisma.notification.create({
         data: {
-            name: req.body.name,
-            artist: req.body.artist,
-            location: req.body.location,
-            details: req.body.details,
-            date: new Date(req.body.date),
+            description: req.body.name + '\'s Concert is coming!',
         }
-    }).then((data) => {
-        res.status(200).send(data);
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send('Error retrieving user data');
     });
-
+    try {
+        const concert = await prisma.concert.create({
+            data: {
+                name: req.body.name,
+                artist: req.body.artist,
+                location: req.body.location,
+                details: req.body.details,
+                date: new Date(req.body.date),
+                image: req.body.image,
+            }
+        });
+        res.status(200).send(concert);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Error creating concert');
+    }
 });
 
 router.get('/getAllConcert', async (req, res) => {
@@ -128,12 +132,12 @@ router.get('/getAllTicket', async (req, res) => {
 
 router.post('/createPayment', async (req, res) => {
     await prisma.payment.create()
-    .then((data) => {
-        res.status(200).send(data);
-    }).catch((err) => {
-        console.log(err);
-        res.status(500).send('Error retrieving user data');
-    });
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
 });
 
 router.get('/getAllPayment', async (req, res) => {
@@ -146,5 +150,14 @@ router.get('/getAllPayment', async (req, res) => {
         });
 });
 
+router.get('/getAllNotification', async (req, res) => {
+    await prisma.notification.findMany()
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
+});
 
 exports.router = router;

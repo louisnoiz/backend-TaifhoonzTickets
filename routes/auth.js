@@ -108,4 +108,27 @@ router.get('/userbyusername/:username', async (req, res) => {
   }
 });
 
+router.put('/user/:id', async (req, res) => {
+  const { id } = req.params;
+  const { username, fullName, email, phone, role } = req.body;
+  try {
+      const user = await prisma.user.update({
+          where: {
+              id: id
+          },
+          data: {
+              username: username,
+              fullName: fullName,
+              email: email,
+              phone: phone,
+              role: role
+          }
+      })
+      res.status(200).send(user);
+  } catch (error) {
+      console.log(error);
+      res.status(500).send('Error updating user data');
+  }
+});
+
 exports.router = router;
