@@ -34,7 +34,8 @@ router.post('/createConcert', upload.single('image'), async (req, res) => {
                 artist: req.body.artist,
                 location: req.body.location,
                 details: req.body.details,
-                date: new Date(req.body.date),
+                dateStart: new Date(req.body.dateStart),
+                dateEnd: new Date(req.body.dateEnd),
                 image: file.path.substr(6),
             }
         });

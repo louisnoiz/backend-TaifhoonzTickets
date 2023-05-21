@@ -29,16 +29,17 @@ model Notification {
 }
 
 model Concert {
-  id       String   @id @default(uuid())
-  name     String   @unique
-  image    String
-  artist   String
-  location String
-  details  String
-  date     DateTime
-  Round    Round[]
-  Ticket   Ticket[]
-  Zone     Zone[]
+  id        String   @id @default(uuid())
+  name      String   @unique
+  artist    String
+  location  String
+  details   String
+  dateStart DateTime
+  dateEnd   DateTime
+  image     String?
+  Round     Round[]
+  Ticket    Ticket[]
+  Zone      Zone[]
 }
 
 model Payment {
