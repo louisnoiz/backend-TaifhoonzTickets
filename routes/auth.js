@@ -61,7 +61,11 @@ router.post('/login', async (req, res) => {
       res.status(401).send('Password is not Correct');
       return;
     }
-    const user = checkUser;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: checkUser.id
+        }
+        });
     const payload = { 
       id: user.id,
       username: user.username,
