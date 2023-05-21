@@ -1,10 +1,27 @@
 const express = require("express")
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const multer = require("multer");
+const path = require("path");
 
 router = express.Router();
 
-router.post('/createConcert', async (req, res) => {
+const storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, "./static/uploads");
+    },
+    filename: function (req, file, callback) {
+        callback(
+            null,
+            file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+        );
+    },
+});
+
+const upload = multer({ storage: storage })
+
+router.post('/createConcert', upload.single('image'), async (req, res) => {
+    const file = req.file;
     await prisma.notification.create({
         data: {
             description: req.body.name + '\'s Concert is coming!',
@@ -18,7 +35,7 @@ router.post('/createConcert', async (req, res) => {
                 location: req.body.location,
                 details: req.body.details,
                 date: new Date(req.body.date),
-                image: req.body.image,
+                image: file.path.substr(6),
             }
         });
         res.status(200).send(concert);
