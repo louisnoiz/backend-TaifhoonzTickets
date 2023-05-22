@@ -22,13 +22,24 @@ const upload = multer({ storage: storage })
 
 router.post('/createConcert', upload.single('image'), async (req, res) => {
     const file = req.file;
-    await prisma.notification.create({
-        data: {
-            description: req.body.name + '\'s Concert is coming!',
-        }
-    });
+    function convertTimeToNumber(timeString) {
+        var parts = timeString.split(":");
+        var hours = parseInt(parts[0], 10);
+        var minutes = parseInt(parts[1], 10);
+
+        var currentDate = new Date(); // Assuming today's date
+        currentDate.setHours(hours);
+        currentDate.setMinutes(minutes);
+
+        return currentDate;
+    }
     try {
-        const concert = await prisma.concert.create({
+        await prisma.notification.create({
+            data: {
+                description: req.body.name + '\'s Concert is coming!',
+            }
+        });
+        const createdConcert = await prisma.concert.create({
             data: {
                 name: req.body.name,
                 artist: req.body.artist,
@@ -38,8 +49,25 @@ router.post('/createConcert', upload.single('image'), async (req, res) => {
                 dateEnd: new Date(req.body.dateEnd),
                 image: file.path.substr(6),
             }
-        });
-        res.status(200).send(concert);
+        })
+        const roundsWithConcertId = JSON.parse(req.body.rounds).map(round => ({
+            concertId: createdConcert.id,
+            startTime: convertTimeToNumber(round.startTime),
+            endTime: convertTimeToNumber(round.endTime),
+            date: new Date(round.date),
+        }))
+        await prisma.round.createMany({
+            data: roundsWithConcertId
+        })
+        await prisma.zone.createMany({
+            data: [
+                { concertId: createdConcert.id, name: 'A', totalSeat: 100 },
+                { concertId: createdConcert.id, name: 'B', totalSeat: 100 },
+                { concertId: createdConcert.id, name: 'C', totalSeat: 100 },
+                { concertId: createdConcert.id, name: 'D', totalSeat: 100 },
+            ],
+        })
+        res.status(200).send("Create concert success");
     } catch (error) {
         console.log(error);
         res.status(500).send('Error creating concert');
@@ -178,4 +206,14 @@ router.get('/getAllNotification', async (req, res) => {
         });
 });
 
+router.delete('delConcert', async (req, res) => {
+    //delete all concert
+    await prisma.concert.deleteMany()
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error deleting concert');
+        });
+});
 exports.router = router;
