@@ -62,7 +62,7 @@ model Round {
 
 model Zone {
   id        String   @id @default(uuid())
-  name      String   @unique
+  name      String
   concertId String
   totalSeat Int
   Ticket    Ticket[]

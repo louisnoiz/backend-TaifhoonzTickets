@@ -83,6 +83,19 @@ router.get('/getAllConcert', async (req, res) => {
             res.status(500).send('Error retrieving user data');
         });
 });
+router.get('/getLastConcert', async (req, res) => {
+    await prisma.concert.findFirst({
+        orderBy: {
+            id: 'desc'
+        }
+    })
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
+});
 
 router.get('/getConcertById/:id', async (req, res) => {
     await prisma.concert.findUnique({
