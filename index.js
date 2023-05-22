@@ -10,15 +10,11 @@ app.use(express.urlencoded({ extended: true }))
 
 
 const indexRouter = require('./routes/index')
-const userRouter = require('./routes/user')
-const orderRouter = require('./routes/concert')
-const createRouter = require('./routes/create');
+const concertRouter = require('./routes/concert')
 const authRouter = require('./routes/auth');
 
 app.use(indexRouter.router)
-app.use(userRouter.router)
-app.use(orderRouter.router)
-app.use(createRouter.router)
+app.use(concertRouter.router)
 app.use(authRouter.router);
 app.listen(3000, () => {
     console.log(`Backend App running at: http://localhost:3000/`)
