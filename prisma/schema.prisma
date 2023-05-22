@@ -67,7 +67,7 @@ model Zone {
   totalSeat Int
   Ticket    Ticket[]
   concert   Concert  @relation(fields: [concertId], references: [id])
-
+  price     Int
   @@index([concertId], map: "Zone_concertId_fkey")
 }
 

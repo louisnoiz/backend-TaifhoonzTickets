@@ -61,10 +61,10 @@ router.post('/createConcert', upload.single('image'), async (req, res) => {
         })
         await prisma.zone.createMany({
             data: [
-                { concertId: createdConcert.id, name: 'A', totalSeat: 100 },
-                { concertId: createdConcert.id, name: 'B', totalSeat: 100 },
-                { concertId: createdConcert.id, name: 'C', totalSeat: 100 },
-                { concertId: createdConcert.id, name: 'D', totalSeat: 100 },
+                { concertId: createdConcert.id, name: 'Zone A (Green)', totalSeat: 100, price: 4800 },
+                { concertId: createdConcert.id, name: 'Zone B (Blue)', totalSeat: 100, price: 4500 },
+                { concertId: createdConcert.id, name: 'Zone C (Purple)', totalSeat: 100, price: 3500 },
+                { concertId: createdConcert.id, name: 'Zone D (Orange)', totalSeat: 100, price: 2500 },
             ],
         })
         res.status(200).send("Create concert success");
@@ -136,6 +136,20 @@ router.get('/getAllRound', async (req, res) => {
         });
 });
 
+router.get('/getRoundByConcertId/:concertId', async (req, res) => {
+    await prisma.round.findMany({
+        where: {
+            concertId: req.params.concertId
+        }
+    })
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
+});
+
 router.post('/createZone', async (req, res) => {
     await prisma.zone.create({
         data: {
@@ -153,6 +167,20 @@ router.post('/createZone', async (req, res) => {
 
 router.get('/getAllZone', async (req, res) => {
     await prisma.zone.findMany()
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
+});
+
+router.get('/getZoneByConcertId/:concertId', async (req, res) => {
+    await prisma.zone.findMany({
+        where: {
+            concertId: req.params.concertId
+        }
+    })
         .then((data) => {
             res.status(200).send(data);
         }).catch((err) => {
