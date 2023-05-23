@@ -190,13 +190,18 @@ router.get('/getZoneByConcertId/:concertId', async (req, res) => {
 });
 
 router.post('/createTicket', async (req, res) => {
+    const createPayment = await prisma.payment.create({
+        data: {
+            status: "PENDING"
+        }
+    })
     await prisma.ticket.create({
         data: {
-            concert_id: req.body.concert_id,
-            round_id: req.body.round_id,
-            zone_id: req.body.zone_id,
+            concertId: req.body.concertId,
+            roundId: req.body.roundId,
+            zoneId: req.body.zoneId,
             userId: req.body.userId,
-            paymentId: req.body.paymentId,
+            paymentId: createPayment.id,
             price: req.body.price
         }
     }).then((data) => {
@@ -218,7 +223,11 @@ router.get('/getAllTicket', async (req, res) => {
 });
 
 router.post('/createPayment', async (req, res) => {
-    await prisma.payment.create()
+    await prisma.payment.create({
+            data: {
+                status: "PENDING"
+            }
+        })
         .then((data) => {
             res.status(200).send(data);
         }).catch((err) => {
