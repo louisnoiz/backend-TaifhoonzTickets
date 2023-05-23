@@ -47,7 +47,7 @@ model Concert {
 
 model Payment {
   id     String         @id @default(uuid())
-  status PaymentStatus? @default(PENDING)
+  status PaymentStatus @default(PENDING)
   Ticket Ticket[]
 }
 
@@ -82,6 +82,7 @@ model Ticket {
   zoneId    String
   userId    String?
   paymentId String?
+  count     Int
   price     Int
   concert   Concert?  @relation(fields: [concertId], references: [id])
   payment   Payment? @relation(fields: [paymentId], references: [id])
