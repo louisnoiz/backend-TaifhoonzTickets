@@ -28,10 +28,10 @@ router.delete('/delConcertById/:id', async (req, res) => {
             }
         })
         res.status(200).send('Delete concert success');
-    }catch (err) {
+    } catch (err) {
         console.log(err);
         res.status(500).send('Error retrieving user data');
-      }
+    }
 });
 
 router.post('/createConcert', upload.single('image'), async (req, res) => {
@@ -282,6 +282,9 @@ router.get('/getAllZone', async (req, res) => {
 
 router.get('/getZoneByConcertId/:concertId', async (req, res) => {
     await prisma.zone.findMany({
+        orderBy: {
+            name: 'desc'
+        },
         where: {
             concertId: req.params.concertId
         }
@@ -307,7 +310,8 @@ router.post('/createTicket', async (req, res) => {
             zoneId: req.body.zoneId,
             userId: req.body.userId,
             paymentId: createPayment.id,
-            price: req.body.price
+            price: req.body.price,
+            count: req.body.count
         }
     }).then((data) => {
         res.status(200).send(data);
@@ -326,13 +330,34 @@ router.get('/getAllTicket', async (req, res) => {
             res.status(500).send('Error retrieving user data');
         });
 });
+router.get('/getTicketById/:id', async (req, res) => {
+    await prisma.ticket.findUnique({
+        where: {
+            id: req.params.id
+        },
+        include: {
+            concert: true,
+            round: true,
+            zone: true,
+            user: true,
+            payment: true
+        }
+    })
+        .then((data) => {
+            res.status(200).send(data);
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
+});
 
 router.post('/createPayment', async (req, res) => {
     await prisma.payment.create({
-            data: {
-                status: "PENDING"
-            }
-        })
+        data: {
+            status: "PENDING"
+        }
+    })
         .then((data) => {
             res.status(200).send(data);
         }).catch((err) => {
@@ -349,6 +374,24 @@ router.get('/getAllPayment', async (req, res) => {
             console.log(err);
             res.status(500).send('Error retrieving user data');
         });
+});
+
+router.get('/getPaymentById/:id', async (req, res) => {
+    await prisma.payment.findUnique({
+        where: {
+            id: req.params.id
+        },
+        include: {
+            Ticket: true
+        }
+    }).then((data) => {
+        res.status(200).send(data);
+    }
+    ).catch((err) => {
+        console.log(err);
+        res.status(500).send('Error retrieving user data');
+    }
+    );
 });
 
 router.get('/getAllNotification', async (req, res) => {
