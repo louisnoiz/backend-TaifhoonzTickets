@@ -330,6 +330,7 @@ router.get('/getAllTicket', async (req, res) => {
             res.status(500).send('Error retrieving user data');
         });
 });
+
 router.get('/getTicketById/:id', async (req, res) => {
     await prisma.ticket.findUnique({
         where: {
@@ -352,10 +353,47 @@ router.get('/getTicketById/:id', async (req, res) => {
         });
 });
 
+router.get('/getTicketByUserId/:userId', async (req, res) => {
+    await prisma.ticket.findMany({
+        where: {
+            userId: req.params.userId
+        },
+        include: {
+            concert: true,
+            round: true,
+            zone: true,
+            payment: true
+        }
+    })
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
+});
+
 router.post('/createPayment', async (req, res) => {
     await prisma.payment.create({
         data: {
             status: "PENDING"
+        }
+    })
+        .then((data) => {
+            res.status(200).send(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).send('Error retrieving user data');
+        });
+});
+
+router.patch('/updatePayment/:paymentId', async (req, res) => {
+    await prisma.payment.update({
+        where: {
+            id: req.params.paymentId
+        },
+        data: {
+            status: req.body.status
         }
     })
         .then((data) => {
@@ -382,7 +420,15 @@ router.get('/getPaymentById/:id', async (req, res) => {
             id: req.params.id
         },
         include: {
-            Ticket: true
+            Ticket: {
+                include: {
+                    concert: true,
+                    round: true,
+                    zone: true,
+                    user: true,
+                    payment: true
+                }
+            }
         }
     }).then((data) => {
         res.status(200).send(data);
