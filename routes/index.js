@@ -9,7 +9,8 @@ router = express.Router();
 
 router.get('/', async (req, res) => {
   const test = await prisma.concert.findMany()
-  res.send("Hello EC2 ", test)
+  console.log(test)
+  res.send("Test Prisma on "+ test[0].name)
 });
 
 
