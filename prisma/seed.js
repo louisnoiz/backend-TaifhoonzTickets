@@ -6,7 +6,7 @@ async function seed() {
         data: {
             username: 'louissarun',
             email: 'louissarun@hotmail.com',
-            password: '12345678',
+            password: '$2a$12$fINInY75TsHPdZMnMWFOFO/BG9/XZtB.CLo2k7T8M5KH9KtIZOZ0K', //12345678
             fullName: 'Sarun Viwatborvornwong',
             phone: '0904397944',
         },
@@ -15,9 +15,9 @@ async function seed() {
 
     const taxwrn = await prisma.user.create({
         data: {
-            username: 'taxwrn',
-            email: 'taxwrn@hotmail.com',
-            password: '12345678',
+            username: 'aitax',
+            email: 'aitax159@gmail.com',
+            password: '$2a$12$fINInY75TsHPdZMnMWFOFO/BG9/XZtB.CLo2k7T8M5KH9KtIZOZ0K', //12345678
             fullName: 'Woranun eiei',
             phone: '0859209787',
         },
@@ -28,7 +28,7 @@ async function seed() {
         data: {
             username: 'taifhoon',
             email: 'taifhoon@hotmail.com',
-            password: '12345678',
+            password: '$2a$12$fINInY75TsHPdZMnMWFOFO/BG9/XZtB.CLo2k7T8M5KH9KtIZOZ0K', //12345678
             fullName: 'Ariyapon Unakul',
             phone: '0812345678',
         },
