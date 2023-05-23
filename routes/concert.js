@@ -75,6 +75,96 @@ router.post('/createConcert', upload.single('image'), async (req, res) => {
     }
 });
 
+router.put('/updateConcert/:concertId', upload.single('image'), async (req, res) => {
+    const concertId = req.params.concertId;
+    const file = req.file;
+
+    function convertTimeToNumber(timeString) {
+        var parts = timeString.split(":");
+        var hours = parseInt(parts[0], 10);
+        var minutes = parseInt(parts[1], 10);
+
+        var currentDate = new Date(); // Assuming today's date
+        currentDate.setHours(hours);
+        currentDate.setMinutes(minutes);
+
+        return currentDate;
+    }
+
+    try {
+        const existingConcert = await prisma.concert.findUnique({
+            where: {
+                id: concertId,
+            },
+            include: {
+                Round: true,
+            },
+        });
+
+        if (!existingConcert) {
+            res.status(404).send("Concert not found");
+            return;
+        }
+
+        const updatedConcertData = {
+            name: req.body.name || existingConcert.name,
+            artist: req.body.artist || existingConcert.artist,
+            location: req.body.location || existingConcert.location,
+            details: req.body.details || existingConcert.details,
+            dateStart: req.body.dateStart ? new Date(req.body.dateStart) : existingConcert.dateStart,
+            dateEnd: req.body.dateEnd ? new Date(req.body.dateEnd) : existingConcert.dateEnd,
+            image: file ? file.path.substr(6) : undefined,
+        };
+
+        const updatedConcert = await prisma.concert.update({
+            where: {
+                id: concertId,
+            },
+            data: updatedConcertData,
+        });
+
+        if (req.body.rounds) {
+            const roundsWithConcertId = JSON.parse(req.body.rounds).map(round => ({
+                concertId: updatedConcert.id,
+                startTime: convertTimeToNumber(round.startTime),
+                endTime: convertTimeToNumber(round.endTime),
+                date: new Date(round.date),
+            }));
+            const roundsToDelete = existingConcert.Round.filter(existingRound =>
+                !roundsWithConcertId.some(updatedRound =>
+                    updatedRound.startTime === existingRound.startTime &&
+                    updatedRound.endTime === existingRound.endTime &&
+                    updatedRound.date === existingRound.date
+                )
+            );
+            await prisma.round.deleteMany({
+                where: {
+                    id: {
+                        in: roundsToDelete.map(round => round.id),
+                    },
+                },
+            });
+            const roundsToAdd = roundsWithConcertId.filter(updatedRound =>
+                !existingConcert.Round.some(existingRound =>
+                    updatedRound.startTime === existingRound.startTime &&
+                    updatedRound.endTime === existingRound.endTime &&
+                    updatedRound.date === existingRound.date
+                )
+            );
+            await prisma.round.createMany({
+                data: roundsToAdd,
+            });
+        }
+        
+
+        res.status(200).send("Update concert success");
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error updating concert");
+    }
+});
+
+
 router.get('/getAllConcert', async (req, res) => {
     await prisma.concert.findMany()
         .then((data) => {
