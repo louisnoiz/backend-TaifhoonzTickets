@@ -26,8 +26,8 @@ model Notification {
   id          String   @id @default(uuid())
   description String
   createdAt   DateTime @default(now())
-  concertId   String
-  concert     Concert  @relation(fields: [concertId], references: [id])
+  concertId   String?
+  concert     Concert?  @relation(fields: [concertId], references: [id])
 }
 
 model Concert {
@@ -53,11 +53,11 @@ model Payment {
 
 model Round {
   id        String   @id @default(uuid())
-  concertId String
+  concertId String?
   startTime DateTime
   endTime   DateTime
   date      DateTime
-  concert   Concert  @relation(fields: [concertId], references: [id])
+  concert   Concert?  @relation(fields: [concertId], references: [id])
   Ticket    Ticket[]
 
   @@index([concertId], map: "Round_concertId_fkey")
@@ -66,10 +66,10 @@ model Round {
 model Zone {
   id        String   @id @default(uuid())
   name      String
-  concertId String
+  concertId String?
   totalSeat Int
   Ticket    Ticket[]
-  concert   Concert  @relation(fields: [concertId], references: [id])
+  concert   Concert?  @relation(fields: [concertId], references: [id])
   price     Int
 
   @@index([concertId], map: "Zone_concertId_fkey")
@@ -77,13 +77,13 @@ model Zone {
 
 model Ticket {
   id        String   @id @default(uuid())
-  concertId String
+  concertId String?
   roundId   String
   zoneId    String
   userId    String?
   paymentId String?
   price     Int
-  concert   Concert  @relation(fields: [concertId], references: [id])
+  concert   Concert?  @relation(fields: [concertId], references: [id])
   payment   Payment? @relation(fields: [paymentId], references: [id])
   round     Round    @relation(fields: [roundId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])

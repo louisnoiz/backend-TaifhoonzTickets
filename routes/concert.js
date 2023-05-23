@@ -20,6 +20,20 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
+router.delete('/delConcertById/:id', async (req, res) => {
+    try {
+        await prisma.concert.delete({
+            where: {
+                id: req.params.id
+            }
+        })
+        res.status(200).send('Delete concert success');
+    }catch (err) {
+        console.log(err);
+        res.status(500).send('Error retrieving user data');
+      }
+});
+
 router.post('/createConcert', upload.single('image'), async (req, res) => {
     const file = req.file;
     function convertTimeToNumber(timeString) {
@@ -47,10 +61,10 @@ router.post('/createConcert', upload.single('image'), async (req, res) => {
         })
         await prisma.notification.create({
             data: {
-              description: `${req.body.name}'s Concert is coming!`,
-              concertId: createdConcert.id,
+                description: `${req.body.name}'s Concert is coming!`,
+                concertId: createdConcert.id,
             }
-          });
+        });
         const roundsWithConcertId = JSON.parse(req.body.rounds).map(round => ({
             concertId: createdConcert.id,
             startTime: convertTimeToNumber(round.startTime),
@@ -155,7 +169,7 @@ router.put('/updateConcert/:concertId', upload.single('image'), async (req, res)
                 data: roundsToAdd,
             });
         }
-        
+
 
         res.status(200).send("Update concert success");
     } catch (error) {
@@ -338,14 +352,16 @@ router.get('/getAllNotification', async (req, res) => {
         });
 });
 
-router.delete('delConcert', async (req, res) => {
-    //delete all concert
-    await prisma.concert.deleteMany()
-        .then((data) => {
-            res.status(200).send(data);
-        }).catch((err) => {
-            console.log(err);
-            res.status(500).send('Error deleting concert');
-        });
-});
+// router.delete('delConcert', async (req, res) => {
+//     //delete all concert
+//     await prisma.concert.deleteMany()
+//         .then((data) => {
+//             res.status(200).send(data);
+//         }).catch((err) => {
+//             console.log(err);
+//             res.status(500).send('Error deleting concert');
+//         });
+// });
+
+
 exports.router = router;
