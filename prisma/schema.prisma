@@ -26,20 +26,23 @@ model Notification {
   id          String   @id @default(uuid())
   description String
   createdAt   DateTime @default(now())
+  concertId   String
+  concert     Concert  @relation(fields: [concertId], references: [id])
 }
 
 model Concert {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  artist    String
-  location  String
-  details   String
-  dateStart DateTime
-  dateEnd   DateTime
-  image     String?
-  Round     Round[]
-  Ticket    Ticket[]
-  Zone      Zone[]
+  id           String         @id @default(uuid())
+  name         String         @unique
+  artist       String
+  location     String
+  details      String
+  dateStart    DateTime
+  dateEnd      DateTime
+  image        String?
+  Round        Round[]
+  Ticket       Ticket[]
+  Zone         Zone[]
+  Notification Notification[]
 }
 
 model Payment {
@@ -68,6 +71,7 @@ model Zone {
   Ticket    Ticket[]
   concert   Concert  @relation(fields: [concertId], references: [id])
   price     Int
+
   @@index([concertId], map: "Zone_concertId_fkey")
 }
 

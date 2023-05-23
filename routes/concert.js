@@ -34,11 +34,6 @@ router.post('/createConcert', upload.single('image'), async (req, res) => {
         return currentDate;
     }
     try {
-        await prisma.notification.create({
-            data: {
-                description: req.body.name + '\'s Concert is coming!',
-            }
-        });
         const createdConcert = await prisma.concert.create({
             data: {
                 name: req.body.name,
@@ -50,6 +45,12 @@ router.post('/createConcert', upload.single('image'), async (req, res) => {
                 image: file.path.substr(6),
             }
         })
+        await prisma.notification.create({
+            data: {
+              description: `${req.body.name}'s Concert is coming!`,
+              concertId: createdConcert.id,
+            }
+          });
         const roundsWithConcertId = JSON.parse(req.body.rounds).map(round => ({
             concertId: createdConcert.id,
             startTime: convertTimeToNumber(round.startTime),
